@@ -40,48 +40,40 @@ interface PaginatedLogs {
 }
 
 function timeAgo(dateStr: string): string {
-  const now = new Date();
+  const now  = new Date();
   const date = new Date(dateStr);
   const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 60)     return 'just now';
+  if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`;
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
   return date.toLocaleDateString();
 }
 
 function getActionIcon(action: string) {
   switch (action) {
-    case 'created':
-      return <PlusCircle className="w-4 h-4 text-green-500" />;
-    case 'updated':
-      return <Edit3 className="w-4 h-4 text-blue-500" />;
-    case 'deleted':
-      return <Trash2 className="w-4 h-4 text-red-500" />;
-    default:
-      return <Activity className="w-4 h-4 text-gray-400" />;
+    case 'created': return <PlusCircle className="w-4 h-4 text-green-500" />;
+    case 'updated': return <Edit3      className="w-4 h-4 text-blue-500"  />;
+    case 'deleted': return <Trash2     className="w-4 h-4 text-red-500"   />;
+    default:        return <Activity   className="w-4 h-4 text-gray-400"  />;
   }
 }
 
 function getActionColor(action: string): string {
   switch (action) {
-    case 'created':
-      return 'bg-green-100 text-green-700';
-    case 'updated':
-      return 'bg-blue-100 text-blue-700';
-    case 'deleted':
-      return 'bg-red-100 text-red-700';
-    default:
-      return 'bg-gray-100 text-gray-600';
+    case 'created': return 'bg-green-100 text-green-700';
+    case 'updated': return 'bg-blue-100 text-blue-700';
+    case 'deleted': return 'bg-red-100 text-red-700';
+    default:        return 'bg-gray-100 text-gray-600';
   }
 }
 
 function getLoggableLabel(type: string): string {
-  if (type.includes('Task')) return 'Task';
-  if (type.includes('Project')) return 'Project';
-  if (type.includes('Comment')) return 'Comment';
+  if (type.includes('Task'))      return 'Task';
+  if (type.includes('Project'))   return 'Project';
+  if (type.includes('Comment'))   return 'Comment';
   if (type.includes('UserStory')) return 'User Story';
-  if (type.includes('Epic')) return 'Epic';
+  if (type.includes('Epic'))      return 'Epic';
   return type.split('\\').pop() ?? type;
 }
 
@@ -91,7 +83,8 @@ function ValueChange({ field, oldVal, newVal }: {
   newVal: unknown;
 }) {
   const format = (v: unknown) => {
-    if (v === null || v === undefined) return <span className="italic text-gray-400">none</span>;
+    if (v === null || v === undefined)
+      return <span className="italic text-gray-400">none</span>;
     return <span className="font-medium text-gray-800">{String(v)}</span>;
   };
 
@@ -123,7 +116,7 @@ function ActivityCard({ log }: { log: ActivityLogEntry }) {
     <div className="flex gap-4 p-4 hover:bg-gray-50 transition-colors rounded-xl group">
       {/* Avatar */}
       <div className="flex-shrink-0">
-        <div className="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white text-sm font-bold">
+        <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-bold">
           {log.user?.name?.charAt(0).toUpperCase() ?? '?'}
         </div>
       </div>
@@ -134,9 +127,7 @@ function ActivityCard({ log }: { log: ActivityLogEntry }) {
           <div className="flex-1 min-w-0">
             {/* Action badge + loggable type */}
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getActionColor(log.action)}`}
-              >
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getActionColor(log.action)}`}>
                 {getActionIcon(log.action)}
                 {log.action}
               </span>
@@ -153,14 +144,16 @@ function ActivityCard({ log }: { log: ActivityLogEntry }) {
               {log.description}
             </p>
 
-            {/* Changed fields preview */}
+            {/* Changed fields */}
             {hasChanges && changedFields.length > 0 && (
               <div className="mt-2">
                 <button
                   onClick={() => setExpanded((v) => !v)}
-                  className="text-xs text-primary-600 hover:text-primary-800 font-medium transition-colors"
+                  className="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
                 >
-                  {expanded ? 'Hide changes' : `Show ${changedFields.length} change${changedFields.length > 1 ? 's' : ''}`}
+                  {expanded
+                    ? 'Hide changes'
+                    : `Show ${changedFields.length} change${changedFields.length > 1 ? 's' : ''}`}
                 </button>
 
                 {expanded && (
@@ -192,27 +185,31 @@ function ActivityCard({ log }: { log: ActivityLogEntry }) {
   );
 }
 
-export default function ActivityLog() {
-  const [paginated, setPaginated] = useState<PaginatedLogs | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [users, setUsers] = useState<UserType[]>([]);
-  const [page, setPage] = useState(1);
+// ══ Main page ══════════════════════════════════════════════════════════════════
 
-  // Filters
+export default function ActivityLog() {
+  const [paginated,  setPaginated ] = useState<PaginatedLogs | null>(null);
+  const [loading,    setLoading   ] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [projects,   setProjects  ] = useState<Project[]>([]);
+  const [users,      setUsers     ] = useState<UserType[]>([]);
+  const [page,       setPage      ] = useState(1);
+
+  // ── Filters ─────────────────────────────────────────────────────────────────
   const [filterProject, setFilterProject] = useState('');
-  const [filterUser, setFilterUser] = useState('');
-  const [filterAction, setFilterAction] = useState('');
-  const [filterFrom, setFilterFrom] = useState('');
-  const [filterTo, setFilterTo] = useState('');
-  const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
+  const [filterUser,    setFilterUser   ] = useState('');
+  const [filterAction,  setFilterAction ] = useState('');
+  const [filterFrom,    setFilterFrom   ] = useState('');
+  const [filterTo,      setFilterTo     ] = useState('');
+  const [search,        setSearch       ] = useState('');
+  const [activeTab,     setActiveTab    ] = useState<'all' | 'my'>('all');
+
+  // ── Fetch logs ───────────────────────────────────────────────────────────────
 
   const fetchLogs = useCallback(
     async (pageNum = 1, showRefresh = false) => {
       if (showRefresh) setRefreshing(true);
-      else setLoading(true);
+      else             setLoading(true);
 
       try {
         const endpoint =
@@ -220,10 +217,10 @@ export default function ActivityLog() {
 
         const params: Record<string, string | number> = { page: pageNum };
         if (filterProject) params.project_id = filterProject;
-        if (filterUser) params.user_id = filterUser;
-        if (filterAction) params.action = filterAction;
-        if (filterFrom) params.from = filterFrom;
-        if (filterTo) params.to = filterTo;
+        if (filterUser)    params.user_id    = filterUser;
+        if (filterAction)  params.action     = filterAction;
+        if (filterFrom)    params.from       = filterFrom;
+        if (filterTo)      params.to         = filterTo;
 
         const res = await api.get(endpoint, { params });
         setPaginated(res.data);
@@ -238,14 +235,16 @@ export default function ActivityLog() {
     [activeTab, filterProject, filterUser, filterAction, filterFrom, filterTo]
   );
 
-  useEffect(() => {
-    fetchLogs(1);
-  }, [fetchLogs]);
+  useEffect(() => { fetchLogs(1); }, [fetchLogs]);
+
+  // ── Load projects + users ────────────────────────────────────────────────────
 
   useEffect(() => {
     api.get('/projects').then((r) => setProjects(r.data.data ?? r.data));
-    api.get('/users').then((r) => setUsers(r.data));
+    api.get('/activity-logs/users').then((r) => setUsers(r.data.data ?? r.data)).catch(() => {});
   }, []);
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
 
   const handleClearFilters = () => {
     setFilterProject('');
@@ -270,11 +269,11 @@ export default function ActivityLog() {
       )
     : allLogs;
 
-  // Group logs by date
+  // Group by date
   const groupedLogs: Record<string, ActivityLogEntry[]> = {};
   filteredLogs.forEach((log) => {
-    const date = new Date(log.created_at);
-    const today = new Date();
+    const date      = new Date(log.created_at);
+    const today     = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
@@ -286,15 +285,17 @@ export default function ActivityLog() {
     } else {
       label = date.toLocaleDateString('en-US', {
         weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
+        year:    'numeric',
+        month:   'long',
+        day:     'numeric',
       });
     }
 
     if (!groupedLogs[label]) groupedLogs[label] = [];
     groupedLogs[label].push(log);
   });
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <div>
@@ -323,14 +324,11 @@ export default function ActivityLog() {
         <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 mb-6 w-fit">
           {[
             { key: 'all', label: 'All Activity' },
-            { key: 'my', label: 'My Activity' },
+            { key: 'my',  label: 'My Activity'  },
           ].map((tab) => (
             <button
               key={tab.key}
-              onClick={() => {
-                setActiveTab(tab.key as 'all' | 'my');
-                setPage(1);
-              }}
+              onClick={() => { setActiveTab(tab.key as 'all' | 'my'); setPage(1); }}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeTab === tab.key
                   ? 'bg-white shadow text-gray-900'
@@ -378,13 +376,11 @@ export default function ActivityLog() {
             >
               <option value="">All Projects</option>
               {projects.map((p) => (
-                <option key={p.id} value={String(p.id)}>
-                  {p.name}
-                </option>
+                <option key={p.id} value={String(p.id)}>{p.name}</option>
               ))}
             </select>
 
-            {/* User */}
+            {/* User — only on All tab */}
             {activeTab === 'all' && (
               <select
                 value={filterUser}
@@ -393,9 +389,7 @@ export default function ActivityLog() {
               >
                 <option value="">All Users</option>
                 {users.map((u) => (
-                  <option key={u.id} value={String(u.id)}>
-                    {u.name}
-                  </option>
+                  <option key={u.id} value={String(u.id)}>{u.name}</option>
                 ))}
               </select>
             )}
@@ -440,7 +434,7 @@ export default function ActivityLog() {
         {/* Activity list */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filteredLogs.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl border border-gray-200">
@@ -454,10 +448,7 @@ export default function ActivityLog() {
                 : 'Activity will appear here as your team works'}
             </p>
             {(hasActiveFilters || search) && (
-              <button
-                onClick={handleClearFilters}
-                className="btn-secondary mt-4 text-sm"
-              >
+              <button onClick={handleClearFilters} className="btn-secondary mt-4 text-sm">
                 Clear filters
               </button>
             )}
@@ -467,11 +458,9 @@ export default function ActivityLog() {
             {Object.entries(groupedLogs).map(([dateLabel, logs], groupIdx) => (
               <div key={dateLabel}>
                 {/* Date group header */}
-                <div
-                  className={`px-4 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between ${
-                    groupIdx > 0 ? 'border-t border-gray-100' : ''
-                  }`}
-                >
+                <div className={`px-4 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between ${
+                  groupIdx > 0 ? 'border-t border-gray-100' : ''
+                }`}>
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     {dateLabel}
                   </span>
@@ -509,18 +498,18 @@ export default function ActivityLog() {
               </button>
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.min(5, paginated?.last_page ?? 1) }, (_, i) => {
-                  const pageNum = i + 1;
+                  const pg = i + 1;
                   return (
                     <button
-                      key={pageNum}
-                      onClick={() => fetchLogs(pageNum)}
+                      key={pg}
+                      onClick={() => fetchLogs(pg)}
                       className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                        page === pageNum
-                          ? 'bg-primary-600 text-white'
+                        page === pg
+                          ? 'bg-indigo-600 text-white'
                           : 'text-gray-600 hover:bg-gray-100'
                       }`}
                     >
-                      {pageNum}
+                      {pg}
                     </button>
                   );
                 })}

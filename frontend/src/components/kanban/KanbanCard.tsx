@@ -1,9 +1,9 @@
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Link } from 'react-router-dom';
-import { Calendar, User } from 'lucide-react';
-import type { Task } from '../../types';
-import Badge from '../ui/Badge';
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Link } from "react-router-dom";
+import { Calendar, User } from "lucide-react";
+import type { Task } from "../../types";
+import Badge from "../ui/Badge";
 
 interface Props {
   task: Task;
@@ -11,8 +11,14 @@ interface Props {
 }
 
 export default function KanbanCard({ task, isDragging }: Props) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging: isSortableDragging } =
-    useSortable({ id: task.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isSortableDragging,
+  } = useSortable({ id: task.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -27,11 +33,13 @@ export default function KanbanCard({ task, isDragging }: Props) {
       {...attributes}
       {...listeners}
       className={`bg-white rounded-lg border border-gray-200 p-3 cursor-grab active:cursor-grabbing shadow-sm hover:shadow-md transition-shadow ${
-        isDragging ? 'shadow-lg rotate-2' : ''
+        isDragging ? "shadow-lg rotate-2" : ""
       }`}
     >
       <Link to={`/tasks/${task.id}`} onClick={(e) => e.stopPropagation()}>
-        <p className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">{task.title}</p>
+        <p className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">
+          {task.title}
+        </p>
       </Link>
 
       <div className="flex flex-wrap gap-1 mb-2">

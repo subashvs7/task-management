@@ -1713,7 +1713,7 @@ export default function Tasks() {
 
   useEffect(() => {
     api.get('/projects').then((r) => setProjects(r.data.data ?? r.data));
-    api.get('/users').then((r) => setUsers(r.data));
+    api.get('/tasks/users').then((r) => setUsers(r.data.data ?? r.data)).catch(() => {});
     api.get('/user-stories').then((r) => setStories(r.data.data ?? r.data)).catch(() => {});
   }, []);
 

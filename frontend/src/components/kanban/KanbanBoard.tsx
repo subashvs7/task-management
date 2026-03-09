@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -6,23 +6,20 @@ import {
   useSensor,
   useSensors,
   closestCenter,
-} from '@dnd-kit/core';
-import type {
-  DragEndEvent,
-  DragStartEvent,
-} from '@dnd-kit/core';
-import { useAppDispatch, useAppSelector } from '../../hooks/useAppDispatch';
-import { fetchKanban, updateTaskStatus } from '../../store/slices/taskSlice';
-import KanbanColumn from './KanbanColumn';
-import KanbanCard from './KanbanCard';
-import type { Task, TaskStatus } from '../../types';
+} from "@dnd-kit/core";
+import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import { useAppDispatch, useAppSelector } from "../../hooks/useAppDispatch";
+import { fetchKanban, updateTaskStatus } from "../../store/slices/taskSlice";
+import KanbanColumn from "./KanbanColumn";
+import KanbanCard from "./KanbanCard";
+import type { Task, TaskStatus } from "../../types";
 
 export const COLUMNS: { id: TaskStatus; label: string; color: string }[] = [
-  { id: 'backlog', label: 'Backlog', color: 'bg-gray-100' },
-  { id: 'todo', label: 'To Do', color: 'bg-blue-50' },
-  { id: 'in_progress', label: 'In Progress', color: 'bg-yellow-50' },
-  { id: 'in_review', label: 'In Review', color: 'bg-purple-50' },
-  { id: 'done', label: 'Done', color: 'bg-green-50' },
+  { id: "backlog", label: "Backlog", color: "bg-gray-100" },
+  { id: "todo", label: "To Do", color: "bg-blue-50" },
+  { id: "in_progress", label: "In Progress", color: "bg-yellow-50" },
+  { id: "in_review", label: "In Review", color: "bg-purple-50" },
+  { id: "done", label: "Done", color: "bg-green-50" },
 ];
 
 const COLUMN_IDS = COLUMNS.map((c) => c.id as string);
@@ -46,7 +43,8 @@ export default function KanbanBoard({ projectId }: Props) {
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [localKanban, setLocalKanban] = useState<Record<TaskStatus, Task[]>>(EMPTY_KANBAN);
+  const [localKanban, setLocalKanban] =
+    useState<Record<TaskStatus, Task[]>>(EMPTY_KANBAN);
 
   const dragSourceStatus = useRef<TaskStatus | null>(null);
   const isDraggingRef = useRef(false);
@@ -54,7 +52,7 @@ export default function KanbanBoard({ projectId }: Props) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
-    })
+    }),
   );
 
   // Initial fetch
@@ -87,7 +85,7 @@ export default function KanbanBoard({ projectId }: Props) {
       }
       return null;
     },
-    []
+    [],
   );
 
   const findColumnFromOverId = useCallback(
@@ -103,7 +101,7 @@ export default function KanbanBoard({ projectId }: Props) {
       }
       return null;
     },
-    [findTaskColumn]
+    [findTaskColumn],
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -178,8 +176,8 @@ export default function KanbanBoard({ projectId }: Props) {
     });
 
     // Persist to backend
-    dispatch(updateTaskStatus({ id: taskId, status: toStatus }))
-      .then((result) => {
+    dispatch(updateTaskStatus({ id: taskId, status: toStatus })).then(
+      (result) => {
         if (updateTaskStatus.fulfilled.match(result)) {
           // Re-fetch fresh data from server
           dispatch(fetchKanban(projectId ? { project_id: projectId } : {}));
@@ -195,7 +193,8 @@ export default function KanbanBoard({ projectId }: Props) {
           };
           setLocalKanban(safe);
         }
-      });
+      },
+    );
   };
 
   const handleDragCancel = () => {

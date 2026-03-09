@@ -18,18 +18,26 @@ import Notifications from './pages/Notifications';
 import Users from './pages/Users';
 import Settings from './pages/Settings';
 import ActivityLog from './pages/ActivityLog';
+import Reports from './pages/Reports';
+
+// ── Guards ────────────────────────────────────────────────────────────────────
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
+// ── Routes ────────────────────────────────────────────────────────────────────
+
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public */}
         <Route path="/login"    element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* Protected — all share the Layout (sidebar + header) */}
         <Route
           path="/"
           element={
@@ -38,7 +46,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route index                   element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard"        element={<Dashboard />} />
           <Route path="projects"         element={<Projects />} />
           <Route path="projects/:id"     element={<ProjectDetail />} />
@@ -49,21 +57,29 @@ function AppRoutes() {
           <Route path="backlog"          element={<Backlog />} />
           <Route path="activity"         element={<ActivityLog />} />
           <Route path="notifications"    element={<Notifications />} />
+          <Route path="reports"          element={<Reports />} />
           <Route path="users"            element={<Users />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="settings"         element={<Settings />} />
           <Route path="*"                element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>
+
       <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
-          style: { borderRadius: '10px', fontSize: '14px', fontWeight: '500' },
+          style: {
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontWeight: '500',
+          },
         }}
       />
     </BrowserRouter>
   );
 }
+
+// ── Root ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
   return (

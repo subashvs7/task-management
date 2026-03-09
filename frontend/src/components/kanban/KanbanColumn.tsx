@@ -1,7 +1,10 @@
-import { useDroppable } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import type { Task, TaskStatus } from '../../types';
-import KanbanCard from './KanbanCard';
+import { useDroppable } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import type { Task, TaskStatus } from "../../types";
+import KanbanCard from "./KanbanCard";
 
 interface Props {
   id: TaskStatus;
@@ -15,12 +18,14 @@ export default function KanbanColumn({ id, label, color, tasks }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   // Filter out any undefined/null tasks defensively
-  const safeTasks = tasks.filter((t): t is Task => t != null && typeof t === 'object' && 'id' in t);
+  const safeTasks = tasks.filter(
+    (t): t is Task => t != null && typeof t === "object" && "id" in t,
+  );
 
   return (
     <div
       className={`flex-shrink-0 w-72 rounded-xl flex flex-col transition-all duration-150 ${color} ${
-        isOver ? 'ring-2 ring-primary-400 ring-offset-1 brightness-95' : ''
+        isOver ? "ring-2 ring-primary-400 ring-offset-1 brightness-95" : ""
       }`}
     >
       {/* Header */}
@@ -47,7 +52,7 @@ export default function KanbanColumn({ id, label, color, tasks }: Props) {
         {safeTasks.length === 0 && (
           <div
             className={`mt-1 h-24 rounded-lg border-2 border-dashed flex items-center justify-center transition-colors ${
-              isOver ? 'border-primary-400 bg-primary-50/50' : 'border-gray-200'
+              isOver ? "border-primary-400 bg-primary-50/50" : "border-gray-200"
             }`}
           >
             <p className="text-xs text-gray-400">Drop here</p>

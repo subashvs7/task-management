@@ -531,6 +531,33 @@ class TaskController extends Controller
         }
     }
 
+
+    // ══ GET /api/tasks/users  (role-scoped — for assignee dropdowns) ════════
+    // NOTE: Route must be registered BEFORE apiResource('tasks') in api.php
+
+    public function users(Request $request): JsonResponse
+    {
+        try {
+            $authUser  = $request->user();
+            $authRole  = $authUser->getRoleNames()->first();
+            $companyId = $authUser->company_id;
+
+            if (in_array($authRole, ['admin', 'manager', 'hr', 'team_leader'])) {
+                $users = \App\Models\User::when($companyId, fn($q) => $q->where('company_id', $companyId))
+                    ->where('is_active', true)
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'email']);
+            } else {
+                // Developers, designers, testers — return only themselves
+                $users = collect([$authUser->only('id', 'name', 'email')]);
+            }
+
+            return response()->json($users);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
     // ── Private helpers ────────────────────────────────────────────────────────
 
     private function recalculateLoggedTime(Task $task): void
