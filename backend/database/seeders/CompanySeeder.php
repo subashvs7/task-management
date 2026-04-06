@@ -10,12 +10,12 @@ class CompanySeeder extends Seeder
     public function run(): void
     {
         Company::firstOrCreate(
-            ['slug' => 'acme-corp'],
+            ['slug' => 'zazu-technologies'],
             [
-                'name' => 'Acme Corporation',
-                'slug' => 'acme-corp',
-                'website' => 'https://acme.example.com',
-                'description' => 'A sample company for testing',
+                'name' => 'Zazu Technologies',
+                'slug' => 'zazu-technologies',
+                'website' => 'https://zazu.com',
+                'description' => 'Zazu Technologies Company',
                 'is_active' => true,
             ]
         );

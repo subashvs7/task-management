@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef,useCallback } from 'react';
 import {
   User, Lock, Bell, Palette, Shield, Trash2,
-  Camera, Eye, EyeOff, Save, Check, X,
-  Upload, AlertTriangle, ChevronRight, Globe,
-  Clock, Mail, Smartphone, Monitor, Moon, Sun,
-  CheckCircle2, Info, Loader2,
+  Camera, Eye, EyeOff, Save, Check,
+  Upload, AlertTriangle, ChevronRight,
+   Monitor, Moon, Sun,
+  CheckCircle2, Loader2,
 } from 'lucide-react';
-import Header from '../components/layout/Header';
+
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
@@ -475,7 +475,7 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Settings" />
+     
 
       <div className="mx-auto max-w-5xl px-4 py-6 md:px-6">
         <div className="flex flex-col gap-6 lg:flex-row">

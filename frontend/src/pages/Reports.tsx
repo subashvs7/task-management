@@ -4,7 +4,7 @@ import {
   ChevronRight, RefreshCw, Target, Loader2, Filter,
   Flame, Activity, CheckCircle2,
 } from 'lucide-react';
-import Header from '../components/layout/Header';
+
 import api from '../services/api';
 
 // ══ Types ══════════════════════════════════════════════════════════════════════
@@ -885,7 +885,7 @@ export default function Reports() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Reports" />
+     
 
       <div className="max-w-7xl mx-auto px-4 py-6 md:px-6 space-y-5">
 

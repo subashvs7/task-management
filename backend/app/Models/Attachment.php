@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
+use App\Traits\LogsActivity;
 
 class Attachment extends Model
 {
+    use LogsActivity;
     use HasFactory;
 
     protected $fillable = [

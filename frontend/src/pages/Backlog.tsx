@@ -110,7 +110,7 @@ export default function Backlog() {
 
   return (
     <div>
-      <Header title="Backlog" />
+      {/* <Header title="Backlog" /> */}
       <div className="p-6">
         {/* Toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">

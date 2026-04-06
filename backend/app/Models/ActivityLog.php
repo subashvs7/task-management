@@ -12,6 +12,8 @@ class ActivityLog extends Model
     use HasFactory;
 
     protected $fillable = [
+        'loggable_type',
+        'loggable_id',
         'user_id',
         'action',
         'description',

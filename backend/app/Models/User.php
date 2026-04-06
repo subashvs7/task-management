@@ -5,16 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Laravel\Sanctum\PersonalAccessToken;
 use Spatie\Permission\Traits\HasRoles;
-
+use App\Traits\LogsActivity;
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles,LogsActivity;
 
     protected $fillable = [
         "name",
@@ -50,13 +48,7 @@ class User extends Authenticatable
         "last_login_at"      => "datetime",
     ];
 
-    // ── Fix: override tokens() to resolve Spatie + Sanctum conflict ──────
-    public function tokens(): MorphMany
-    {
-        return $this->morphMany(PersonalAccessToken::class, "tokenable");
-    }
-
-    // ── Relationships ─────────────────────────────────────────────────────
+    // ── Relationships ─────────────────────────────────
 
     public function company(): BelongsTo
     {

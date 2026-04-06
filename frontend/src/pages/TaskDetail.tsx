@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
-  ArrowLeft, Calendar, User, Tag, Clock, Send, Plus, Trash2,
-  CheckCircle2, Circle, Timer, TrendingUp, AlertTriangle,
-  PlayCircle, CheckSquare, BarChart3, Edit3, X, Save,
+  ArrowLeft, Calendar, User, Tag, Send, Plus, Trash2,
+  CheckCircle2, Circle, Timer, AlertTriangle,
+  PlayCircle, CheckSquare, Edit3, X, Save,
   Paperclip, MessageSquare, Activity, Shield,
-  Flag, Copy, Share2, ChevronRight, RefreshCw,
-  Star, ExternalLink, Award, Zap, Hash, GitBranch,
+  Copy, Share2, ChevronRight, RefreshCw,
+  Star, ExternalLink, Award, Hash, GitBranch,
   MoreVertical, ChevronDown, Pencil, Eye, Lock,
   AlarmClock, Gauge, ListChecks, Flame, Target,
 } from 'lucide-react';
@@ -254,7 +254,7 @@ export default function TaskDetail() {
     setSpinning(false);
   }, [id, dispatch]);
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => { reload(); }, [reload]);
 
   useEffect(() => {
     if (currentTask) {
@@ -292,10 +292,10 @@ export default function TaskDetail() {
   );
 
   // ── derived ──
-  const st  = STATUS_MAP[currentTask.status]   ?? STATUS_MAP.todo;
+  const st  = STATUS_MAP[currentTask.status]    ?? STATUS_MAP.todo;
   const pr  = PRIORITY_MAP[currentTask.priority] ?? PRIORITY_MAP.medium;
-  const tp  = TYPE_MAP[currentTask.type]        ?? TYPE_MAP.task;
-  const pct = currentTask.completion_percentage ?? 0;
+  const tp  = TYPE_MAP[currentTask.type]         ?? TYPE_MAP.task;
+  const pct = currentTask.completion_percentage  ?? 0;
   const estMin = (currentTask.estimate_hours ?? 0) * 60 + (currentTask.estimate_minutes ?? 0);
   const logMin = (currentTask.logged_hours   ?? 0) * 60 + (currentTask.logged_minutes   ?? 0);
   const isOverdue = currentTask.due_date && new Date(currentTask.due_date) < new Date() && !['done','closed'].includes(currentTask.status);
@@ -310,6 +310,9 @@ export default function TaskDetail() {
     { key: 'files',     icon: Paperclip,    label: 'Files',     count: currentTask.attachments_count ?? currentTask.attachments?.length },
     { key: 'activity',  icon: Activity,     label: 'Activity',  count: actLogs.length },
   ];
+
+  // ── suppress unused but required import warnings ──
+  void Hash; void Section;
 
   // ══════════════════════════════════════════════════════════════════════
   // Handlers
@@ -392,7 +395,7 @@ export default function TaskDetail() {
   const deleteTm = async (lid: number) => {
     try {
       const r = await api.delete(`/tasks/${currentTask.id}/time-logs/${lid}`);
-      setTimeLogs(r.data.task?.timeLogs ?? r.data.task?.time_logs ?? timeLogs.filter(l => l.id !== lid));
+      setTimeLogs(r.data.task?.timeLogs ?? r.data.task?.time_logs ?? timeLogs.filter((l: TimeLog) => l.id !== lid));
       reload(true); setDelTarget(null); toast.success('Removed');
     } catch { toast.error('Failed'); }
   };
@@ -475,10 +478,10 @@ export default function TaskDetail() {
               {showActions && (
                 <div className="absolute right-0 top-10 z-50 w-48 bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden">
                   {[
-                    { icon: Copy,    label: 'Duplicate Task', fn: () => { duplicate(); setShowActions(false); } },
-                    { icon: Pencil,  label: 'Edit Task',      fn: () => { navigate(`/tasks/${currentTask.id}/edit`); setShowActions(false); } },
-                    { icon: GitBranch, label: 'Link to Story', fn: () => setShowActions(false) },
-                    { icon: Lock,    label: 'Lock Task',      fn: () => setShowActions(false) },
+                    { icon: Copy,      label: 'Duplicate Task', fn: () => { duplicate(); setShowActions(false); } },
+                    { icon: Pencil,    label: 'Edit Task',      fn: () => { navigate(`/tasks/${currentTask.id}/edit`); setShowActions(false); } },
+                    { icon: GitBranch, label: 'Link to Story',  fn: () => setShowActions(false) },
+                    { icon: Lock,      label: 'Lock Task',      fn: () => setShowActions(false) },
                   ].map(a => (
                     <button key={a.label} onClick={a.fn}
                       className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
@@ -515,7 +518,7 @@ export default function TaskDetail() {
                   <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ring-1 ${pr.color} ${pr.glow}`}>
                     <Flame className="w-3 h-3" /> {pr.label}
                   </span>
-                  <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ring-1 ring-gray-200 bg-gray-50 text-gray-600`}>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ring-1 ring-gray-200 bg-gray-50 text-gray-600">
                     <span className={tp.color}>{tp.emoji}</span>
                     <span className="capitalize">{currentTask.type}</span>
                   </span>
@@ -1012,7 +1015,7 @@ export default function TaskDetail() {
                   { label: 'Assignee', val: currentTask.assignee ? <div className="flex items-center gap-1.5"><Ava user={currentTask.assignee} size={20} /><span className="text-xs font-bold text-gray-800">{currentTask.assignee.name}</span></div> : <span className="text-xs text-gray-400">Unassigned</span> },
                   ...(currentTask.reporter ? [{ label: 'Reporter', val: <div className="flex items-center gap-1.5"><Ava user={currentTask.reporter} size={20} /><span className="text-xs font-bold text-gray-800">{currentTask.reporter.name}</span></div> }] : []),
                   { label: 'Due Date', val: currentTask.due_date ? <span className={`text-xs font-bold ${isOverdue ? 'text-red-500' : 'text-gray-800'}`}>{new Date(currentTask.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span> : <span className="text-xs text-gray-400">Not set</span> },
-                  ...(currentTask.project ? [{ label: 'Project',  val: <Link to={`/projects/${currentTask.project.id}`} className="text-xs font-bold text-indigo-500 hover:text-indigo-700 flex items-center gap-0.5 transition-colors"><span className="truncate max-w-[100px]">{currentTask.project.name}</span><ExternalLink className="w-3 h-3 flex-shrink-0" /></Link> }] : []),
+                  ...(currentTask.project ? [{ label: 'Project', val: <Link to={`/projects/${currentTask.project.id}`} className="text-xs font-bold text-indigo-500 hover:text-indigo-700 flex items-center gap-0.5 transition-colors"><span className="truncate max-w-[100px]">{currentTask.project.name}</span><ExternalLink className="w-3 h-3 flex-shrink-0" /></Link> }] : []),
                   { label: 'Created',  val: <span className="text-xs text-gray-600 font-medium">{timeAgo(currentTask.created_at!)}</span> },
                   { label: 'Updated',  val: <span className="text-xs text-gray-600 font-medium">{timeAgo(currentTask.updated_at!)}</span> },
                 ].map((row, i, arr) => (
@@ -1091,11 +1094,11 @@ export default function TaskDetail() {
               <p className="text-[10px] font-black uppercase tracking-[.12em] text-gray-400 mb-3">Quick Actions</p>
               <div className="space-y-1">
                 {[
-                  { icon: Copy,       label: 'Duplicate Task',      fn: duplicate },
-                  { icon: Share2,     label: 'Copy Link',           fn: copyLink },
-                  { icon: Paperclip,  label: 'Manage Attachments',  fn: () => setTab('files') },
-                  { icon: Tag,        label: 'Manage Labels',       fn: () => setLblModal(true) },
-                  { icon: ChevronRight, label: 'Edit Task',         fn: () => navigate(`/tasks/${currentTask.id}/edit`) },
+                  { icon: Copy,        label: 'Duplicate Task',     fn: duplicate },
+                  { icon: Share2,      label: 'Copy Link',          fn: copyLink },
+                  { icon: Paperclip,   label: 'Manage Attachments', fn: () => setTab('files') },
+                  { icon: Tag,         label: 'Manage Labels',      fn: () => setLblModal(true) },
+                  { icon: ChevronRight,label: 'Edit Task',          fn: () => navigate(`/tasks/${currentTask.id}/edit`) },
                 ].map(a => (
                   <button key={a.label} onClick={a.fn}
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 hover:text-indigo-600 transition-colors group">

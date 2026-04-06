@@ -22,17 +22,17 @@ class ActivityLogController extends Controller
             $authRole  = $authUser->getRoleNames()->first();
             $companyId = $authUser->company_id;
 
-            $query = ActivityLog::with('user')
+            $query = ActivityLog::with(['user:id,name,email'])
                 ->orderBy('created_at', 'desc');
 
-            // Scope to company — only show logs for users in same company
+            // Scope to company
             if ($companyId) {
                 $companyUserIds = User::where('company_id', $companyId)->pluck('id');
                 $query->whereIn('user_id', $companyUserIds);
             }
 
-            // Non-admin / non-manager roles only see their own logs
-            if (!in_array($authRole, ['admin', 'manager', 'hr'])) {
+            // Non-privileged roles only see their own logs
+            if (!in_array($authRole, ['admin', 'manager', 'hr', 'team_leader'])) {
                 $query->where('user_id', $authUser->id);
             }
 
@@ -68,33 +68,44 @@ class ActivityLogController extends Controller
             }
 
             return response()->json($query->paginate(30));
+
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // GET /api/activity-logs/my  — current user's own activity
+    // GET /api/activity-logs/my
     // ══════════════════════════════════════════════════════════════════
 
     public function myActivity(Request $request): JsonResponse
     {
         try {
-            $logs = ActivityLog::with('user')
+            $query = ActivityLog::with(['user:id,name,email'])
                 ->where('user_id', $request->user()->id)
-                ->orderBy('created_at', 'desc')
-                ->paginate(30);
+                ->orderBy('created_at', 'desc');
 
-            return response()->json($logs);
+            if ($request->filled('action')) {
+                $query->where('action', $request->action);
+            }
+
+            if ($request->filled('from')) {
+                $query->whereDate('created_at', '>=', $request->from);
+            }
+
+            if ($request->filled('to')) {
+                $query->whereDate('created_at', '<=', $request->to);
+            }
+
+            return response()->json($query->paginate(30));
+
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // GET /api/activity-logs/users
-    // Returns users visible to the current role for the filter dropdown.
-    // Avoids calling /api/users which requires admin/manager/hr/team_leader.
+    // GET /api/activity-logs/users  — for filter dropdown
     // ══════════════════════════════════════════════════════════════════
 
     public function users(Request $request): JsonResponse
@@ -104,8 +115,6 @@ class ActivityLogController extends Controller
             $authRole  = $authUser->getRoleNames()->first();
             $companyId = $authUser->company_id;
 
-            // admin / manager / hr  → all company users
-            // everyone else         → only themselves (so the filter still works)
             if (in_array($authRole, ['admin', 'manager', 'hr', 'team_leader'])) {
                 $users = User::when($companyId, fn($q) => $q->where('company_id', $companyId))
                     ->orderBy('name')
@@ -115,6 +124,7 @@ class ActivityLogController extends Controller
             }
 
             return response()->json($users);
+
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -129,7 +139,7 @@ class ActivityLogController extends Controller
         try {
             $taskIds = Task::where('project_id', $project->id)->pluck('id');
 
-            $logs = ActivityLog::with('user')
+            $logs = ActivityLog::with(['user:id,name,email'])
                 ->where(function ($q) use ($project, $taskIds) {
                     $q->where(function ($q2) use ($project) {
                         $q2->where('loggable_type', Project::class)
@@ -143,6 +153,7 @@ class ActivityLogController extends Controller
                 ->paginate(50);
 
             return response()->json($logs);
+
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
@@ -155,13 +166,44 @@ class ActivityLogController extends Controller
     public function forTask(Request $request, Task $task): JsonResponse
     {
         try {
-            $logs = ActivityLog::with('user')
+            $logs = ActivityLog::with(['user:id,name,email'])
                 ->where('loggable_type', Task::class)
                 ->where('loggable_id', $task->id)
                 ->orderBy('created_at', 'desc')
                 ->get();
 
             return response()->json($logs);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // GET /api/activity-logs/stats  — summary counts for dashboard
+    // ══════════════════════════════════════════════════════════════════
+
+    public function stats(Request $request): JsonResponse
+    {
+        try {
+            $authUser  = $request->user();
+            $companyId = $authUser->company_id;
+
+            $base = ActivityLog::query();
+            if ($companyId) {
+                $ids = User::where('company_id', $companyId)->pluck('id');
+                $base->whereIn('user_id', $ids);
+            }
+
+            return response()->json([
+                'today'   => (clone $base)->whereDate('created_at', today())->count(),
+                'week'    => (clone $base)->whereBetween('created_at', [now()->startOfWeek(), now()])->count(),
+                'total'   => (clone $base)->count(),
+                'created' => (clone $base)->where('action', 'created')->count(),
+                'updated' => (clone $base)->where('action', 'updated')->count(),
+                'deleted' => (clone $base)->where('action', 'deleted')->count(),
+            ]);
+
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }

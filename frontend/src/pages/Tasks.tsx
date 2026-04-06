@@ -1,19 +1,19 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
-  Plus, Search, Filter, X, ChevronDown, ChevronUp, ChevronRight,
-  Calendar, Clock, Users, Target, AlertTriangle, CheckCircle2,
-  Circle, Timer, Zap, BarChart3, Edit3, Trash2, Eye,
-  TrendingUp, BookOpen, Layers, Flag, Activity, User,
-  PlayCircle, CheckSquare, MoreVertical, Grid3X3, List,
+  Plus, Search, X, ChevronDown, ChevronUp, ChevronRight,
+  AlertTriangle, CheckCircle2,
+  Circle, Timer, Activity,
+  CheckSquare, MoreVertical, Grid3X3, List,
   RefreshCw, Copy, Tag, Paperclip, MessageSquare,
-  ArrowUpRight, Flame, Star, Columns, SortAsc, SortDesc,
-  Download, Upload, Shield, Bug, Wrench, FlaskConical,
-  Microscope, Palette, FileText, Layout, ChevronLeft,
+  ArrowUpRight, Star, Columns, SortAsc, SortDesc,
+  Download, Shield, Bug, FlaskConical,
+  Microscope, Palette, FileText, ChevronLeft,
+  Edit3, Eye, Trash2, TrendingUp, Calendar,
+  Clock, Plus as PlusIcon,
 } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import Header from '../components/layout/Header';
+import { Link, useSearchParams } from 'react-router-dom';
+
 import Modal from '../components/ui/Modal';
-import Badge from '../components/ui/Badge';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -37,11 +37,6 @@ interface UserStory {
   id: number;
   name: string;
   status: string;
-}
-
-interface Epic {
-  id: number;
-  name: string;
 }
 
 interface TimeLogEntry {
@@ -227,6 +222,12 @@ function getLabelColor(label: string): string {
 }
 function getTypeConfig(type: string) {
   return TASK_TYPES.find((t) => t.value === type) ?? TASK_TYPES[0];
+}
+
+// Strip time portion from ISO datetime string for <input type="date">
+function toDateInputValue(dateStr?: string): string {
+  if (!dateStr) return '';
+  return dateStr.split('T')[0];
 }
 
 // ─── Progress Ring ────────────────────────────────────────────────────────────
@@ -608,7 +609,6 @@ function TaskDetailDrawer({ taskId, onClose, onEdit, onRefresh }: {
   const logMin   = (task.logged_hours ?? 0) * 60 + (task.logged_minutes ?? 0);
   const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !['done','closed'].includes(task.status);
 
-  // Status color for header
   const headerBg =
     task.priority === 'critical' ? 'from-red-600 to-rose-700' :
     task.priority === 'high'     ? 'from-orange-500 to-orange-600' :
@@ -732,7 +732,7 @@ function TaskDetailDrawer({ taskId, onClose, onEdit, onRefresh }: {
           <div className="relative p-5">
             <div className="flex items-start justify-between gap-3 mb-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-semibold bg-white/20 text-white`}>
+                <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-semibold bg-white/20 text-white">
                   <cfg.icon className="w-3.5 h-3.5" />
                   {cfg.label}
                 </span>
@@ -787,10 +787,10 @@ function TaskDetailDrawer({ taskId, onClose, onEdit, onRefresh }: {
         {/* ── Quick stats strip ── */}
         <div className="grid grid-cols-4 border-b border-gray-100 flex-shrink-0 bg-white">
           {[
-            { label: 'Subtasks',  value: `${completedSubtasks}/${totalSubtasks}`,          icon: CheckSquare,  color: 'text-indigo-500' },
-            { label: 'Comments',  value: task.comments?.length ?? task.comments_count ?? 0, icon: MessageSquare,color: 'text-blue-500' },
-            { label: 'Estimate',  value: estMin > 0 ? formatMinutes(estMin) : '—',          icon: Timer,        color: 'text-orange-500' },
-            { label: 'Logged',    value: logMin > 0 ? formatMinutes(logMin) : '—',          icon: Clock,        color: 'text-green-500' },
+            { label: 'Subtasks',  value: `${completedSubtasks}/${totalSubtasks}`,           icon: CheckSquare,   color: 'text-indigo-500' },
+            { label: 'Comments',  value: task.comments?.length ?? task.comments_count ?? 0,  icon: MessageSquare, color: 'text-blue-500' },
+            { label: 'Estimate',  value: estMin > 0 ? formatMinutes(estMin) : '—',           icon: Timer,         color: 'text-orange-500' },
+            { label: 'Logged',    value: logMin > 0 ? formatMinutes(logMin) : '—',           icon: Clock,         color: 'text-green-500' },
           ].map((s) => (
             <div key={s.label} className="py-3 flex flex-col items-center gap-1 border-r border-gray-100 last:border-0">
               <s.icon className={`w-4 h-4 ${s.color}`} />
@@ -1062,7 +1062,7 @@ function TaskDetailDrawer({ taskId, onClose, onEdit, onRefresh }: {
                   </p>
                   <button onClick={() => setShowTimeForm((v) => !v)}
                     className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
-                    <Plus className="w-3.5 h-3.5" /> Log Time
+                    <PlusIcon className="w-3.5 h-3.5" /> Log Time
                   </button>
                 </div>
 
@@ -1260,13 +1260,12 @@ function TaskDetailDrawer({ taskId, onClose, onEdit, onRefresh }: {
 
 // ─── Create / Edit Task Modal ─────────────────────────────────────────────────
 
-function TaskFormModal({ isOpen, onClose, editTask, projects, users, stories, onSaved }: {
+function TaskFormModal({ isOpen, onClose, editTask, projects, users, onSaved }: {
   isOpen: boolean;
   onClose: () => void;
   editTask: TaskFull | null;
   projects: Project[];
   users: User[];
-  stories: UserStory[];
   onSaved: (task: TaskFull) => void;
 }) {
   const [form, setForm] = useState(EMPTY_FORM);
@@ -1285,7 +1284,8 @@ function TaskFormModal({ isOpen, onClose, editTask, projects, users, stories, on
         status:                editTask.status,
         priority:              editTask.priority,
         type:                  editTask.type,
-        due_date:              editTask.due_date ?? '',
+        // ── FIX: strip time portion so <input type="date"> accepts the value ──
+        due_date:              toDateInputValue(editTask.due_date),
         assigned_to:           editTask.assigned_to ? String(editTask.assigned_to) : '',
         reporter_id:           editTask.reporter_id ? String(editTask.reporter_id) : '',
         estimate_hours:        String(editTask.estimate_hours ?? 0),
@@ -1627,12 +1627,10 @@ function BulkActionBar({ selectedIds, users, onAction, onClear }: {
 
 export default function Tasks() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const [tasks, setTasks]         = useState<TaskFull[]>([]);
   const [projects, setProjects]   = useState<Project[]>([]);
   const [users, setUsers]         = useState<User[]>([]);
-  const [stories, setStories]     = useState<UserStory[]>([]);
   const [stats, setStats]         = useState<TaskStats | null>(null);
   const [loading, setLoading]     = useState(true);
   const [totalPages, setTotalPages] = useState(1);
@@ -1683,7 +1681,6 @@ export default function Tasks() {
       const res = await api.get('/tasks', { params });
       const data = res.data;
 
-      // Paginated response
       if (data.data && data.total !== undefined) {
         setTasks(data.data);
         setTotalPages(data.last_page ?? 1);
@@ -1714,7 +1711,6 @@ export default function Tasks() {
   useEffect(() => {
     api.get('/projects').then((r) => setProjects(r.data.data ?? r.data));
     api.get('/tasks/users').then((r) => setUsers(r.data.data ?? r.data)).catch(() => {});
-    api.get('/user-stories').then((r) => setStories(r.data.data ?? r.data)).catch(() => {});
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -1775,9 +1771,7 @@ export default function Tasks() {
     );
   };
 
-  const selectAll = () => {
-    setSelectedIds(tasks.map((t) => t.id));
-  };
+  const selectAll = () => { setSelectedIds(tasks.map((t) => t.id)); };
   const clearSelection = () => setSelectedIds([]);
 
   const hasFilters = filterProject || filterStatus || filterPriority || filterType || filterAssignee || filterOverdue;
@@ -1787,7 +1781,6 @@ export default function Tasks() {
     setCurrentPage(1);
   };
 
-  // Stats for tabs
   const overdueCount    = stats?.overdue_count ?? tasks.filter((t) => t.due_date && new Date(t.due_date) < new Date() && !['done','closed'].includes(t.status)).length;
   const unassignedCount = tasks.filter((t) => !t.assigned_to).length;
 
@@ -1799,23 +1792,26 @@ export default function Tasks() {
       : <SortAsc className="w-3 h-3 text-gray-300" />
   );
 
+  // Suppress unused warning for imports that are used conditionally
+  void ChevronDown; void ChevronUp;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Tasks" />
+     
       <div className="p-6 max-w-7xl mx-auto">
 
         {/* ── Stats Cards ── */}
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-5">
             {[
-              { label: 'Total',      value: stats.total,                              color: 'text-gray-700',   bg: 'bg-white' },
-              { label: 'Backlog',    value: stats.by_status?.backlog ?? 0,            color: 'text-gray-600',   bg: 'bg-gray-50' },
-              { label: 'In Progress',value: stats.by_status?.in_progress ?? 0,       color: 'text-blue-700',   bg: 'bg-blue-50' },
-              { label: 'Done',       value: (stats.by_status?.done ?? 0) + (stats.by_status?.closed ?? 0), color: 'text-green-700', bg: 'bg-green-50' },
-              { label: 'Overdue',    value: stats.overdue_count,                      color: 'text-red-700',    bg: 'bg-red-50' },
-              { label: 'This Week',  value: stats.completed_this_week,                color: 'text-teal-700',   bg: 'bg-teal-50' },
-              { label: 'Estimate',   value: formatMinutes(stats.total_estimate_min),  color: 'text-orange-700', bg: 'bg-orange-50' },
-              { label: 'Avg %',      value: `${stats.avg_completion}%`,              color: 'text-indigo-700', bg: 'bg-indigo-50' },
+              { label: 'Total',       value: stats.total,                                                            color: 'text-gray-700',   bg: 'bg-white' },
+              { label: 'Backlog',     value: stats.by_status?.backlog ?? 0,                                          color: 'text-gray-600',   bg: 'bg-gray-50' },
+              { label: 'In Progress', value: stats.by_status?.in_progress ?? 0,                                      color: 'text-blue-700',   bg: 'bg-blue-50' },
+              { label: 'Done',        value: (stats.by_status?.done ?? 0) + (stats.by_status?.closed ?? 0),          color: 'text-green-700',  bg: 'bg-green-50' },
+              { label: 'Overdue',     value: stats.overdue_count,                                                    color: 'text-red-700',    bg: 'bg-red-50' },
+              { label: 'This Week',   value: stats.completed_this_week,                                              color: 'text-teal-700',   bg: 'bg-teal-50' },
+              { label: 'Estimate',    value: formatMinutes(stats.total_estimate_min),                                color: 'text-orange-700', bg: 'bg-orange-50' },
+              { label: 'Avg %',       value: `${stats.avg_completion}%`,                                             color: 'text-indigo-700', bg: 'bg-indigo-50' },
             ].map((s) => (
               <div key={s.label} className={`${s.bg} rounded-2xl border border-gray-100 shadow-sm p-3.5 text-center`}>
                 <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
@@ -1889,9 +1885,9 @@ export default function Tasks() {
               ))}
             </div>
 
-            <button onClick={() => { setShowStats((v) => !v); }}
+            <button onClick={() => setShowStats((v) => !v)}
               className={`p-2 rounded-xl transition-colors ${showStats ? 'bg-blue-50 text-blue-600' : 'border border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
-              <BarChart3 className="w-4 h-4" />
+              <TrendingUp className="w-4 h-4" />
             </button>
 
             <button onClick={() => { setEditTask(null); setIsModalOpen(true); }}
@@ -1928,7 +1924,6 @@ export default function Tasks() {
               </button>
             ))}
 
-            {/* Select all / refresh */}
             <div className="flex items-center gap-2 ml-auto">
               {tasks.length > 0 && (
                 <button onClick={selectedIds.length === tasks.length ? clearSelection : selectAll}
@@ -2106,7 +2101,6 @@ export default function Tasks() {
           </div>
 
         ) : (
-          /* Kanban view - redirect to KanbanBoard component */
           <div className="text-center py-10 bg-white rounded-2xl border border-gray-100">
             <Columns className="w-10 h-10 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">Kanban view</p>
@@ -2166,7 +2160,6 @@ export default function Tasks() {
         editTask={editTask}
         projects={projects}
         users={users}
-        stories={stories}
         onSaved={handleSaved}
       />
 

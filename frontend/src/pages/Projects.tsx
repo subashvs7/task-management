@@ -14,7 +14,7 @@ import {
   updateProject,
   deleteProject,
 } from '../store/slices/projectSlice';
-import Header from '../components/layout/Header';
+
 import Modal from '../components/ui/Modal';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -769,7 +769,7 @@ export default function Projects() {
 
   return (
     <div>
-      <Header title="Projects" />
+     
       <div className="p-6 max-w-7xl mx-auto">
 
         {/* ── Summary cards ── */}

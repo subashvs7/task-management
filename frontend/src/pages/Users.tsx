@@ -23,7 +23,7 @@ import {
   Check,
   UserPlus,
 } from 'lucide-react';
-import Header from '../components/layout/Header';
+
 import api from '../services/api';
 import { useAppSelector } from '../hooks/useAppDispatch';
 import toast from 'react-hot-toast';
@@ -43,7 +43,7 @@ interface UserRow {
   company_id?: number;
   created_at: string;
   roles: { id: number; name: string }[];
-  _plainPassword?: string;   // stored locally after create/edit
+  _plainPassword?: string; // stored locally after create/edit
 }
 
 interface FormState {
@@ -96,6 +96,16 @@ function fmtRole(r: string): string {
   return r.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// ── Safe JSON parse — never throws, never crashes on "undefined" string ──────
+function safeJsonParse<T>(raw: string | null): T | null {
+  if (!raw || raw === 'undefined' || raw === 'null') return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // useAuthRole
 // ── Reads role from ALL possible sources in priority order:
@@ -115,14 +125,13 @@ function extractRole(obj: any): string {
   return '';
 }
 
+// ── FIXED: was doing raw JSON.parse which crashes on "undefined" string ───────
 function roleFromStorage(): string {
   for (const key of ['auth_user', 'user', 'authUser', 'current_user']) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) continue;
-      const role = extractRole(JSON.parse(raw));
-      if (role) return role;
-    } catch {}
+    const parsed = safeJsonParse<any>(localStorage.getItem(key));
+    if (!parsed) continue;
+    const role = extractRole(parsed);
+    if (role) return role;
   }
   return '';
 }
@@ -231,9 +240,9 @@ function CredentialsModal({
   };
 
   const handleSave = async () => {
-    if (!newPw)             { setPwError('Password is required');    return; }
-    if (newPw.length < 8)   { setPwError('Minimum 8 characters');    return; }
-    if (newPw !== confirmPw){ setPwError('Passwords do not match');   return; }
+    if (!newPw)              { setPwError('Password is required');  return; }
+    if (newPw.length < 8)    { setPwError('Minimum 8 characters');  return; }
+    if (newPw !== confirmPw) { setPwError('Passwords do not match'); return; }
     setPwError('');
     setSaving(true);
     try {
@@ -810,9 +819,9 @@ export default function UsersPage() {
 
   // ── Handlers ──────────────────────────────────────────────────────────
 
-  const openCreate      = () => { setModalMode('create'); setModalUser(null);  setShowModal(true); };
-  const openEdit        = (u: UserRow) => { setModalMode('edit');   setModalUser(u); setShowModal(true); };
-  const openView        = (u: UserRow) => { setModalMode('view');   setModalUser(u); setShowModal(true); };
+  const openCreate      = () => { setModalMode('create'); setModalUser(null); setShowModal(true); };
+  const openEdit        = (u: UserRow) => { setModalMode('edit');  setModalUser(u); setShowModal(true); };
+  const openView        = (u: UserRow) => { setModalMode('view');  setModalUser(u); setShowModal(true); };
   const openCredentials = (u: UserRow) => setCredUser({ ...u, _plainPassword: pwStore[u.id] });
 
   const handleSaved = (userId: number | null, plainPw?: string) => {
@@ -836,7 +845,7 @@ export default function UsersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Users" />
+    
 
       <div className="max-w-7xl mx-auto px-4 py-6 md:px-6 space-y-5">
 
@@ -876,10 +885,7 @@ export default function UsersPage() {
                 <Plus className="w-4 h-4" />
                 Create New User
               </button>
-            ) : (
-              /* Role loaded but no permission — show nothing */
-              null
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -952,7 +958,7 @@ export default function UsersPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {rows.map((u) => {
-                    const role      = u.roles?.[0]?.name ?? 'member';
+                    const role         = u.roles?.[0]?.name ?? 'member';
                     const hasTrackedPw = !!pwStore[u.id];
                     return (
                       <tr key={u.id} className="hover:bg-indigo-50/30 transition-colors group">
@@ -1024,7 +1030,6 @@ export default function UsersPage() {
                                 className="w-8 h-8 relative flex items-center justify-center rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
                                 title={authRole === 'admin' ? 'View / change credentials' : 'Change password'}>
                                 <Key className="w-4 h-4" />
-                                {/* Amber dot = password tracked in this session */}
                                 {hasTrackedPw && (
                                   <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-amber-400 rounded-full pointer-events-none" />
                                 )}

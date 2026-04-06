@@ -89,21 +89,30 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get   ('/attachments/{attachment}/download', [AttachmentController::class, 'download']);
     Route::apiResource('attachments', AttachmentController::class)->except(['index', 'store']);
 
-    // Activity Logs — named sub-routes (my, users) MUST come before param routes
-    Route::get('/activity-logs',                   [ActivityLogController::class, 'index']);
-    Route::get('/activity-logs/my',                [ActivityLogController::class, 'myActivity']);
-    Route::get('/activity-logs/users',             [ActivityLogController::class, 'users']);          // filter dropdown
-    Route::get('/activity-logs/project/{project}', [ActivityLogController::class, 'forProject']);
-    Route::get('/activity-logs/task/{task}',       [ActivityLogController::class, 'forTask']);
+   
+ // Activity Logs — add stats route
+Route::get('/activity-logs',                   [ActivityLogController::class, 'index']);
+Route::get('/activity-logs/my',                [ActivityLogController::class, 'myActivity']);
+Route::get('/activity-logs/users',             [ActivityLogController::class, 'users']);
+Route::get('/activity-logs/stats',             [ActivityLogController::class, 'stats']);          // ← ADD
+Route::get('/activity-logs/project/{project}', [ActivityLogController::class, 'forProject']);
+Route::get('/activity-logs/task/{task}',       [ActivityLogController::class, 'forTask']);
 
-    // Notifications
-    Route::get   ('/notifications',            [NotificationController::class, 'index']);
-    Route::get   ('/notifications/unread',     [NotificationController::class, 'unread']);
-    Route::post  ('/notifications/read-all',   [NotificationController::class, 'markAllAsRead']);
-    Route::delete('/notifications/delete-all', [NotificationController::class, 'destroyAll']);
-    Route::patch ('/notifications/{id}/read',  [NotificationController::class, 'markAsRead']);
-    Route::delete('/notifications/{id}',       [NotificationController::class, 'destroy']);
+// Route::patch('/projects/{id}/restore',      [ProjectController::class, 'restore']);
+// Route::delete('/projects/{id}/force-delete', [ProjectController::class, 'forceDelete']);
+  
+// ── Notifications ─────────────────────────────────────────────────────────────
+// IMPORTANT: named sub-routes (unread, unread-count, read-all, delete-all)
+// MUST be declared BEFORE the {id} wildcard routes — otherwise Laravel matches
+// the word "unread" as an {id} parameter and hits the wrong controller method.
 
+Route::get   ('/notifications',              [NotificationController::class, 'index']);
+Route::get   ('/notifications/unread',       [NotificationController::class, 'unread']);
+Route::get   ('/notifications/unread-count', [NotificationController::class, 'unread']);  // alias for Header.tsx
+Route::post  ('/notifications/read-all',     [NotificationController::class, 'markAllAsRead']);
+Route::delete('/notifications/delete-all',   [NotificationController::class, 'destroyAll']);
+Route::patch ('/notifications/{id}/read',    [NotificationController::class, 'markAsRead']);
+Route::delete('/notifications/{id}',         [NotificationController::class, 'destroy']);
     // Reports — moved INSIDE auth:sanctum (were outside — caused 401 errors)
     Route::prefix('reports')->group(function () {
         Route::get('overview', [ReportsController::class, 'overview']);

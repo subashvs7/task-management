@@ -8,10 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Traits\LogsActivity;
 
 class Task extends Model
 {
+   use LogsActivity;
     use HasFactory;
+     
+    
 
     protected $fillable = [
         'project_id', 'story_id', 'parent_id',

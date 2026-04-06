@@ -7,7 +7,7 @@ import {
   ArrowUpRight, Star, Flag, Activity,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import Header from '../components/layout/Header';
+
 import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import api from '../services/api';
@@ -1049,7 +1049,7 @@ export default function Epics() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="Epics" />
+      
       <div className="p-6 max-w-7xl mx-auto">
 
         {/* ── Top stats ── */}

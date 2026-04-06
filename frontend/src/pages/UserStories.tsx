@@ -8,7 +8,7 @@ import {
   Activity, User, Tag, RefreshCw, Download,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import Header from '../components/layout/Header';
+
 import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import api from '../services/api';
@@ -1402,7 +1402,7 @@ export default function UserStories() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title="User Stories" />
+      
       <div className="p-6 max-w-7xl mx-auto">
 
         {/* ── Stats cards ── */}
