@@ -45,7 +45,7 @@ const NAV_GROUPS = [
     label: 'Admin',
     items: [
       { to: '/users', icon: Users, label: 'Users', roles: ['admin', 'hr'] },
-      { to: '/companies', icon: Building2, label: 'Companies', roles: ['admin'] },
+      // { to: '/companies', icon: Building2, label: 'Companies', roles: ['admin'] },
     ],
   },
 ];

@@ -1048,7 +1048,7 @@ export default function Projects() {
               </tbody>
             </table>
           </div>
-        )}
+        )}  
       </div>
 
       {/* ── Form Modal ── */}

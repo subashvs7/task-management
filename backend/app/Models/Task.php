@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +14,7 @@ use App\Traits\LogsActivity;
 
 class Task extends Model
 {
+    use SoftDeletes;
    use LogsActivity;
     use HasFactory;
      
