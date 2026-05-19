@@ -4,11 +4,10 @@ return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
     'allowed_origins' => [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://task.cryptotrekkers.in',  // ✅ ADD THIS
-    'https://www.cryptotrekkers.in',   // ✅ ADD if needed
-],
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'https://task.cryptotrekkers.in',
+    ],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],

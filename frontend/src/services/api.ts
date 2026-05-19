@@ -12,8 +12,9 @@ export const safeJsonParse = <T>(value: string | null, fallback: T): T => {
 
 // ── Axios instance ─────────────────────────────────────────────────────────────
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  // baseURL: 'http://localhost:8000/api',
   // baseURL: 'https://task.cryptotrekkers.in/api',
+  baseURL: 'https://task.cryptotrekkers.in/api',
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
